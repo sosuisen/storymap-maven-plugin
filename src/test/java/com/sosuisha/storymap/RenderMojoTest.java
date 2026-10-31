@@ -128,6 +128,7 @@ class RenderMojoTest {
         mojo.outputDirectory = folder.resolve("out").toFile();
         mojo.formats = formats;
         mojo.scale = 1.0f;
+        mojo.maxCardWidth = 240f;
         return mojo;
     }
 
