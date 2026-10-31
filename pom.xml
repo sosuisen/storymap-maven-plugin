@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.sosuisha</groupId>
+  <artifactId>storymap-maven-plugin</artifactId>
+  <!-- The release workflow sets the version from the Git tag. -->
+  <version>${revision}</version>
+  <packaging>maven-plugin</packaging>
+  <name>storymap-maven-plugin</name>
+  <description>Render a Markdown outline as a user story map in HTML, SVG, or PNG</description>
+
+  <prerequisites>
+    <maven>3.9.0</maven>
+  </prerequisites>
+
+  <properties>
+    <revision>1.0.0-SNAPSHOT</revision>
+    <maven.compiler.release>25</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.version>3.10.0</maven.version>
+    <maven.plugin.tools.version>3.16.0</maven.plugin.tools.version>
+    <jspecify.version>1.0.1</jspecify.version>
+    <errorprone.version>2.51.0</errorprone.version>
+    <nullaway.version>0.14.3</nullaway.version>
+    <junit.version>6.1.3</junit.version>
+    <!-- The release workflow builds the native libraries on each OS and skips cargo here. -->
+    <cargo.skip>false</cargo.skip>
+    <!-- A platform profile below sets these two. -->
+    <native.platform>unsupported</native.platform>
+    <native.library>none</native.library>
+    <!-- JaCoCo sets argLine to its agent. The empty default keeps
+         @{argLine} in surefire valid when JaCoCo does not run. -->
+    <argLine></argLine>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${maven.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>${maven.plugin.tools.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>${jspecify.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <!-- The library that cargo built for this machine. -->
+      <resource>
+        <directory>native/target/release</directory>
+        <targetPath>native/${native.platform}</targetPath>
+        <includes>
+          <include>${native.library}</include>
+        </includes>
+      </resource>
+      <!-- The libraries of all platforms, put here by the release workflow. -->
+      <resource>
+        <directory>native-libs</directory>
+        <targetPath>native</targetPath>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.4</version>
+        <executions>
+          <execution>
+            <id>cargo-build</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <skip>${cargo.skip}</skip>
+              <executable>cargo</executable>
+              <arguments>
+                <argument>build</argument>
+                <argument>--release</argument>
+                <argument>--manifest-path</argument>
+                <argument>${project.basedir}/native/Cargo.toml</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>${maven.plugin.tools.version}</version>
+        <configuration>
+          <goalPrefix>storymap</goalPrefix>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.16.0</version>
+        <configuration>
+          <release>${maven.compiler.release}</release>
+          <compilerArgs>
+            <!-- Required by Error Prone. Error Prone needs access to javac
+                 internals; the add-exports options are in .mvn/jvm.config. -->
+            <arg>-XDcompilePolicy=simple</arg>
+            <arg>--should-stop=ifError=FLOW</arg>
+            <!-- The built-in Error Prone checks run with their default levels.
+                 Three checks that are off by default are turned on as warnings,
+                 and NullAway runs as an error.
+                 Maven sets the fields with @Parameter after the constructor.
+                 The javac plugin arguments must be one argument. -->
+            <arg>-Xplugin:ErrorProne -Xep:FieldCanBeFinal:WARN -Xep:MethodCanBeStatic:WARN -Xep:PrivateConstructorForUtilityClass:WARN -Xep:NullAway:ERROR -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:AnnotatedPackages=com.sosuisha -XepOpt:NullAway:ExcludedFieldAnnotations=org.apache.maven.plugins.annotations.Parameter</arg>
+          </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>com.google.errorprone</groupId>
+              <artifactId>error_prone_core</artifactId>
+              <version>${errorprone.version}</version>
+            </path>
+            <path>
+              <groupId>com.uber.nullaway</groupId>
+              <artifactId>nullaway</artifactId>
+              <version>${nullaway.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <!-- The renderer calls restricted FFM methods. -->
+          <argLine>@{argLine} --enable-native-access=ALL-UNNAMED</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.16</version>
+        <executions>
+          <!-- Adds the agent that records the coverage to the test JVMs. -->
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- Writes the HTML report to target/site/jacoco after the tests. -->
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.30.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.3</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <targetClasses>
+            <param>com.sosuisha.*</param>
+          </targetClasses>
+          <targetTests>
+            <param>com.sosuisha.*</param>
+          </targetTests>
+          <!-- The same settings as surefire. -->
+          <jvmArgs>
+            <jvmArg>--enable-native-access=ALL-UNNAMED</jvmArg>
+          </jvmArgs>
+          <threads>4</threads>
+          <timestampedReports>false</timestampedReports>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>2.29.0</version>
+        <configuration>
+          <configFile>${project.basedir}/java-formatter.xml</configFile>
+          <lineEnding>LF</lineEnding>
+        </configuration>
+        <!-- Formats the sources in process-sources, before every compile. -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Writes the version into the installed pom, in place of ${revision}. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.8.0</version>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten-clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- The directory and the file name of the native library on this machine.
+       The Java side looks for the library in native/<platform>/ on the class path. -->
+  <profiles>
+    <profile>
+      <id>windows-x86_64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.platform>windows-x86_64</native.platform>
+        <native.library>storymap_ffi.dll</native.library>
+      </properties>
+    </profile>
+    <profile>
+      <id>linux-x86_64</id>
+      <activation>
+        <os>
+          <name>linux</name>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.platform>linux-x86_64</native.platform>
+        <native.library>libstorymap_ffi.so</native.library>
+      </properties>
+    </profile>
+    <profile>
+      <id>linux-aarch64</id>
+      <activation>
+        <os>
+          <name>linux</name>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.platform>linux-aarch64</native.platform>
+        <native.library>libstorymap_ffi.so</native.library>
+      </properties>
+    </profile>
+    <profile>
+      <id>macos-x86_64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.platform>macos-x86_64</native.platform>
+        <native.library>libstorymap_ffi.dylib</native.library>
+      </properties>
+    </profile>
+    <profile>
+      <id>macos-aarch64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <native.platform>macos-aarch64</native.platform>
+        <native.library>libstorymap_ffi.dylib</native.library>
+      </properties>
+    </profile>
+  </profiles>
+</project>
