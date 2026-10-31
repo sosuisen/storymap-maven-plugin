@@ -10,5 +10,5 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-# The maximum card width comes in storymap 0.3.0, which is not on crates.io yet
-storymap = { git = "https://github.com/sosuisen/storymap", rev = "f0a1e1779370ef6889f4895a8fc727fdf0b1f5d6", features = ["image"] }
+# storymap 0.3.0 is not on crates.io yet, so the commit on main is used
+storymap = { git = "https://github.com/sosuisen/storymap", rev = "d97f6dafefaf8b65cff744a0fce8a4a1733d919b", features = ["image"] }
