@@ -10,6 +10,30 @@
   <packaging>maven-plugin</packaging>
   <name>storymap-maven-plugin</name>
   <description>Render a Markdown outline as a user story map in HTML, SVG, or PNG</description>
+  <url>https://github.com/sosuisen/storymap-maven-plugin</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>sosuisen</id>
+      <name>Hidekazu Kubota</name>
+      <email>hidekazu.kubota@gmail.com</email>
+      <organization>Sosuisha</organization>
+      <organizationUrl>https://sosuisha.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/sosuisen/storymap-maven-plugin.git</connection>
+    <developerConnection>scm:git:ssh://github.com/sosuisen/storymap-maven-plugin.git</developerConnection>
+    <url>https://github.com/sosuisen/storymap-maven-plugin/tree/main</url>
+  </scm>
 
   <prerequisites>
     <maven>3.9.0</maven>
@@ -258,6 +282,79 @@
   <!-- The directory and the file name of the native library on this machine.
        The Java side looks for the library in native/<platform>/ on the class path. -->
   <profiles>
+    <!-- Publishes to Maven Central. The release workflow turns it on. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.12.0</version>
+            <configuration>
+              <!-- Strict doclint would fail the release on minor Javadoc style issues. -->
+              <doclint>none</doclint>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.8</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <!-- Without loopback mode gpg waits for a passphrase prompt
+                       when there is no TTY, and the build hangs. -->
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.12.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <!-- A version on Central can never be changed or removed.
+                   Check the deployment in the Central Portal before it goes public. -->
+              <autoPublish>false</autoPublish>
+              <waitUntil>validated</waitUntil>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>windows-x86_64</id>
       <activation>
