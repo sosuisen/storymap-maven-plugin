@@ -34,7 +34,7 @@ public final class StoryMapRenderer {
      * @throws RenderException if the native library fails, such as for an image that is too large
      * @throws UnsupportedOperationException if no native library is built for this platform
      */
-    public static byte[] render(String outline, Format format, float scale) {
+    public static byte[] render(String outline, OutputFormat format, float scale) {
         Objects.requireNonNull(outline, "outline");
         Objects.requireNonNull(format, "format");
         if (!(Float.isFinite(scale) && scale > 0)) {

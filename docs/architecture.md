@@ -38,11 +38,11 @@ C ABIの関数を4つ公開する。
 | `RenderMojo` | `render`ゴール。パラメーターを読み、形式ごとにファイルを書く |
 | `StoryMapRenderer` | FFMでネイティブ関数を呼び、描画結果のバイト列を返す |
 | `NativeLibrary` | このOSとアーキテクチャのライブラリを、クラスパスから取り出して読み込む |
-| `Format` | 出力形式（HTML・SVG・PNG）と拡張子 |
+| `OutputFormat` | 出力形式（HTML・SVG・PNG）と拡張子 |
 | `RenderException` | ネイティブ側の描画の失敗 |
 
 依存の向きは、`RenderMojo` → `StoryMapRenderer` → `NativeLibrary`の一方向である。
-`Format`と`RenderException`は、どこからも使われる値の型である。
+`OutputFormat`と`RenderException`は、どこからも使われる値の型である。
 
 ## 外部とのやり取り
 
@@ -54,7 +54,7 @@ C ABIの関数を4つ公開する。
 ## 主な処理の流れ
 
 1. Mavenが`RenderMojo`のフィールドにパラメーターを入れ、`execute`を呼ぶ。
-2. `RenderMojo`が形式の名前を`Format`に変え、入力をUTF-8で読む。
+2. `RenderMojo`が形式の名前を`OutputFormat`に変え、入力をUTF-8で読む。
 3. 形式ごとに`StoryMapRenderer.render`を呼ぶ。
 4. 初回の呼び出しで、`StoryMapRenderer.Natives`が`NativeLibrary.load`でライブラリを読み込み、関数のハンドルを作る。
 5. 入力をネイティブメモリーに写して関数を呼び、結果をJavaの配列に写してから`storymap_free`で解放する。
