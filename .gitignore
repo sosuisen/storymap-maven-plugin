@@ -1,0 +1,8 @@
+target/
+.claude
+CLAUDE.md
+.$*.bkp
+*.log
+# The native libraries of all platforms, collected by the release workflow
+native-libs/
+.flattened-pom.xml
