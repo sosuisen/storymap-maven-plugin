@@ -126,6 +126,16 @@ class StoryMapRendererTest {
         );
     }
 
+    @ParameterizedTest(name = "上限 {0}")
+    @ValueSource(floats = {0f, -1f, Float.NaN, Float.POSITIVE_INFINITY})
+    @DisplayName("カードの幅の上限は、正の有限の数でなければならない")
+    void card_width_limit_must_be_positive_and_finite(float maxCardWidth) {
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> StoryMapRenderer.render(OUTLINE, OutputFormat.HTML, 1.0f, maxCardWidth)
+        );
+    }
+
     private static String renderText(OutputFormat format) {
         return new String(StoryMapRenderer.render(OUTLINE, format, 1.0f), StandardCharsets.UTF_8);
     }
