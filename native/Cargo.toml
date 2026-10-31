@@ -10,5 +10,4 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-# storymap 0.3.0 is not on crates.io yet, so the commit on main is used
-storymap = { git = "https://github.com/sosuisen/storymap", rev = "7301cebd2259bea77e1e9f041c7443f3f9f09801", features = ["image"] }
+storymap = { version = "0.3", features = ["image"] }
