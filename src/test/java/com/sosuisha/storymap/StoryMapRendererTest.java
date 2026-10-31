@@ -52,6 +52,16 @@ class StoryMapRendererTest {
         void japanese_text_survives() {
             assertTrue(renderText(OutputFormat.HTML).contains("カードで払う"));
         }
+
+        @Test
+        @DisplayName("カードの幅の上限を変えられる")
+        void card_width_limit_can_be_changed() {
+            byte[] html = StoryMapRenderer.render(OUTLINE, OutputFormat.HTML, 1.0f, 320f);
+
+            assertTrue(
+                new String(html, StandardCharsets.UTF_8).contains("--card-max-width: 320px;")
+            );
+        }
     }
 
     @Nested
