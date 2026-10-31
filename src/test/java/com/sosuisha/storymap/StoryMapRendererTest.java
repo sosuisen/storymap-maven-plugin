@@ -54,9 +54,9 @@ class StoryMapRendererTest {
         }
 
         @Test
-        @DisplayName("カードの幅の上限を指定しなければ、240pxになる")
-        void card_width_limit_is_240px_by_default() {
-            assertTrue(renderText(OutputFormat.HTML).contains("--card-max-width: 240px;"));
+        @DisplayName("カードの幅の上限を指定しなければ、160pxになる")
+        void card_width_limit_is_160px_by_default() {
+            assertTrue(renderText(OutputFormat.HTML).contains("--card-max-width: 160px;"));
         }
 
         @Test
