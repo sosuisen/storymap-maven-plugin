@@ -95,6 +95,18 @@ class StoryMapRendererTest {
         }
 
         @Test
+        @DisplayName("カードの幅の上限を狭くすると、長い文のカードが折り返され、画像が狭くなる")
+        void narrower_card_width_limit_makes_a_narrower_image() {
+            String outline =
+                "- A card with a rather long text that does not fit in a narrow card\n";
+
+            int narrow = pngWidth(StoryMapRenderer.render(outline, OutputFormat.PNG, 1.0f, 120f));
+            int wide = pngWidth(StoryMapRenderer.render(outline, OutputFormat.PNG, 1.0f, 480f));
+
+            assertTrue(narrow < wide);
+        }
+
+        @Test
         @DisplayName("大きすぎる画像は、描画の失敗になる")
         void too_large_image_fails() {
             assertThrows(
