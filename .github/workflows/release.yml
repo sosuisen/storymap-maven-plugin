@@ -86,11 +86,18 @@ jobs:
 
       - uses: actions/checkout@v7
 
+      # Writes the server "central" into settings.xml and imports the signing key.
+      # The values come from the env of the deploy step.
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       # Each artifact goes into a folder of its own name, such as native-libs/linux-x86_64/.
       - uses: actions/download-artifact@v7
@@ -102,6 +109,7 @@ jobs:
       - name: Test and build the plugin
         run: mvn -B clean package -Dcargo.skip=true "-Drevision=$APP_VERSION"
 
+      # A version on Central can never be replaced, so the jar is checked before the deploy.
       - name: Check that the jar holds the library of every platform
         run: |
           count=$(unzip -l "target/storymap-maven-plugin-$APP_VERSION.jar" | grep -c 'native/.*storymap_ffi')
@@ -109,6 +117,15 @@ jobs:
             echo "::error::The jar holds $count native libraries, not 5"
             exit 1
           fi
+
+      # The tests have passed in the step above.
+      # The deployment waits in the Central Portal until it is published there by hand.
+      - name: Deploy to Maven Central
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn -B deploy -Prelease -Dcargo.skip=true -DskipTests "-Drevision=$APP_VERSION"
 
       # The pom goes with the jar, so that users can install both with install:install-file.
       - name: Create the GitHub Release
