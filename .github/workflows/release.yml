@@ -52,7 +52,7 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: runner.os == 'Linux'
         with:
           python-version: '3.x'
@@ -93,7 +93,7 @@ jobs:
           cache: maven
 
       # Each artifact goes into a folder of its own name, such as native-libs/linux-x86_64/.
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: native-libs
 
