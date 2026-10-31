@@ -565,7 +565,7 @@ checksum = "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8"
 [[package]]
 name = "storymap"
 version = "0.3.0"
-source = "git+https://github.com/sosuisen/storymap?rev=dbd7dee4bd3df4224ace60d572ab0f5bb1ac1441#dbd7dee4bd3df4224ace60d572ab0f5bb1ac1441"
+source = "git+https://github.com/sosuisen/storymap?rev=f0a1e1779370ef6889f4895a8fc727fdf0b1f5d6#f0a1e1779370ef6889f4895a8fc727fdf0b1f5d6"
 dependencies = [
  "comrak",
  "regex",
