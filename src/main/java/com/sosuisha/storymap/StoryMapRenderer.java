@@ -19,6 +19,9 @@ import java.util.Objects;
  * Renders a Markdown outline as a user story map, with the storymap crate in the native library.
  */
 public final class StoryMapRenderer {
+    /** The maximum card width when none is given, in CSS pixels. */
+    public static final float DEFAULT_MAX_CARD_WIDTH = 240f;
+
     private StoryMapRenderer() {}
 
     /**
@@ -35,11 +38,36 @@ public final class StoryMapRenderer {
      * @throws UnsupportedOperationException if no native library is built for this platform
      */
     public static byte[] render(String outline, OutputFormat format, float scale) {
+        return render(outline, format, scale, DEFAULT_MAX_CARD_WIDTH);
+    }
+
+    /**
+     * Renders the outline in the format, with cards up to the given width.
+     *
+     * @param outline the Markdown outline
+     * @param format the output format
+     * @param scale the size of the PNG image, where 1.0 is one pixel per CSS pixel. The other
+     *        formats do not use it
+     * @param maxCardWidth the widest that a card may be, in CSS pixels. A longer text wraps
+     * @return the rendered bytes. HTML and SVG are UTF-8 text
+     * @throws NullPointerException if {@code outline} or {@code format} is null
+     * @throws IllegalArgumentException if {@code scale} or {@code maxCardWidth} is not a positive
+     *         finite number
+     * @throws RenderException if the native library fails, such as for an image that is too large
+     * @throws UnsupportedOperationException if no native library is built for this platform
+     */
+    public static byte[] render(String outline, OutputFormat format, float scale,
+        float maxCardWidth) {
         Objects.requireNonNull(outline, "outline");
         Objects.requireNonNull(format, "format");
         if (!(Float.isFinite(scale) && scale > 0)) {
             throw new IllegalArgumentException(
                 "The scale must be a positive finite number: " + scale
+            );
+        }
+        if (!(Float.isFinite(maxCardWidth) && maxCardWidth > 0)) {
+            throw new IllegalArgumentException(
+                "The maximum card width must be a positive finite number: " + maxCardWidth
             );
         }
         try (Arena arena = Arena.ofConfined()) {
@@ -49,12 +77,12 @@ public final class StoryMapRenderer {
             MemorySegment outputLength = arena.allocate(Natives.SIZE);
             MemorySegment output = Natives.invoke(() -> switch (format) {
                 case HTML -> (MemorySegment) Natives.RENDER_HTML
-                    .invokeExact(input, inputLength, outputLength);
+                    .invokeExact(input, inputLength, maxCardWidth, outputLength);
                 case SVG -> (MemorySegment) Natives.RENDER_SVG
-                    .invokeExact(input, inputLength, outputLength);
+                    .invokeExact(input, inputLength, maxCardWidth, outputLength);
                 case PNG -> (MemorySegment) Natives.RENDER_PNG.invokeExact(
                     input, inputLength, scale,
-                    outputLength
+                    maxCardWidth, outputLength
                 );
             });
             if (output.equals(MemorySegment.NULL)) {
@@ -85,15 +113,15 @@ public final class StoryMapRenderer {
 
         static final MethodHandle RENDER_HTML = downcall(
             "storymap_render_html",
-            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, ADDRESS)
+            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, ADDRESS)
         );
         static final MethodHandle RENDER_SVG = downcall(
             "storymap_render_svg",
-            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, ADDRESS)
+            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, ADDRESS)
         );
         static final MethodHandle RENDER_PNG = downcall(
             "storymap_render_png",
-            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, ADDRESS)
+            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, JAVA_FLOAT, ADDRESS)
         );
         static final MethodHandle FREE =
             downcall("storymap_free", FunctionDescriptor.ofVoid(ADDRESS, SIZE));

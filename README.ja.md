@@ -59,6 +59,7 @@ mvn storymap:render -Dstorymap.input=docs/map.md -Dstorymap.formats=html,svg,png
 | `outputDirectory` | `storymap.outputDirectory` | `${project.build.directory}/storymap` | 出力先のフォルダー |
 | `formats` | `storymap.formats` | `html` | 出力形式。`html`、`svg`、`png`から選ぶ |
 | `scale` | `storymap.scale` | `1.0` | PNGの倍率。1.0で、CSSの1pxが1画素になる |
+| `maxCardWidth` | `storymap.maxCardWidth` | `240` | カードの幅の上限（CSSのpx）。長い文は折り返す |
 
 出力ファイルの名前は、入力ファイルの名前から拡張子を除いたものです。
 

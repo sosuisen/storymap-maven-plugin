@@ -21,9 +21,9 @@ C ABIの関数を4つ公開する。
 
 | 関数 | 役割 |
 |---|---|
-| `storymap_render_html(input, len, out_len)` | 単独で開けるHTMLページを返す |
-| `storymap_render_svg(input, len, out_len)` | SVG文書を返す |
-| `storymap_render_png(input, len, scale, out_len)` | PNG画像を返す |
+| `storymap_render_html(input, len, max_card_width, out_len)` | 単独で開けるHTMLページを返す。カードの幅の上限は、CSS変数`--card-max-width`で渡す |
+| `storymap_render_svg(input, len, max_card_width, out_len)` | SVG文書を返す |
+| `storymap_render_png(input, len, scale, max_card_width, out_len)` | PNG画像を返す |
 | `storymap_free(ptr, len)` | 返したバッファーを解放する |
 
 - 入力はUTF-8のバイト列である。

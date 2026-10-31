@@ -564,9 +564,8 @@ checksum = "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8"
 
 [[package]]
 name = "storymap"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bcaac21bcab572e40283d8d1c72de54bbfe97580e20b8423df6f02861bb641f"
+version = "0.3.0"
+source = "git+https://github.com/sosuisen/storymap?rev=d97f6dafefaf8b65cff744a0fce8a4a1733d919b#d97f6dafefaf8b65cff744a0fce8a4a1733d919b"
 dependencies = [
  "comrak",
  "regex",

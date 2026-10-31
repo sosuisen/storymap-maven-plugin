@@ -40,10 +40,15 @@ public class RenderMojo extends AbstractMojo {
     @Parameter(property = "storymap.scale", defaultValue = "1.0")
     float scale;
 
+    /** The widest that a card may be, in CSS pixels. A longer text wraps onto more lines. */
+    @Parameter(property = "storymap.maxCardWidth", defaultValue = "240")
+    float maxCardWidth;
+
     /**
      * Renders the input in each format and writes the files.
      *
-     * @throws MojoFailureException if a format is unknown or the scale is not positive
+     * @throws MojoFailureException if a format is unknown, or the scale or the maximum card width is not
+     *         positive
      * @throws MojoExecutionException if a file cannot be read or written, or the rendering fails
      */
     @Override
@@ -81,7 +86,7 @@ public class RenderMojo extends AbstractMojo {
     private byte[] render(String outline, OutputFormat format)
         throws MojoExecutionException, MojoFailureException {
         try {
-            return StoryMapRenderer.render(outline, format, scale);
+            return StoryMapRenderer.render(outline, format, scale, maxCardWidth);
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage(), e);
         } catch (RenderException e) {

@@ -12,7 +12,7 @@ use storymap::StoryMap;
 use storymap::html::{escape_html, map_css, render_map_content};
 use storymap::image::{ImageOptions, fontdb, render_png, render_svg};
 
-/// Render the outline as a standalone HTML page
+/// Render the outline as a standalone HTML page, with cards up to `max_card_width` CSS pixels wide
 ///
 /// # Safety
 ///
@@ -21,14 +21,15 @@ use storymap::image::{ImageOptions, fontdb, render_png, render_svg};
 pub unsafe extern "C" fn storymap_render_html(
     input: *const u8,
     input_len: usize,
+    max_card_width: f32,
     out_len: *mut usize,
 ) -> *mut u8 {
     let outline = unsafe { read_outline(input, input_len) };
-    let rendered = catch(|| html_page(&storymap::parse(&outline)).into_bytes());
+    let rendered = catch(|| html_page(&storymap::parse(&outline), max_card_width).into_bytes());
     unsafe { hand_over(rendered, out_len) }
 }
 
-/// Render the outline as an SVG document
+/// Render the outline as an SVG document, with cards up to `max_card_width` CSS pixels wide
 ///
 /// # Safety
 ///
@@ -37,16 +38,23 @@ pub unsafe extern "C" fn storymap_render_html(
 pub unsafe extern "C" fn storymap_render_svg(
     input: *const u8,
     input_len: usize,
+    max_card_width: f32,
     out_len: *mut usize,
 ) -> *mut u8 {
     let outline = unsafe { read_outline(input, input_len) };
     // The SVG is measured in CSS pixels, so the scale of the options does not matter
-    let rendered =
-        catch(|| render_svg(&storymap::parse(&outline), &image_options(1.0)).into_bytes());
+    let rendered = catch(|| {
+        render_svg(
+            &storymap::parse(&outline),
+            &image_options(1.0, max_card_width),
+        )
+        .into_bytes()
+    });
     unsafe { hand_over(rendered, out_len) }
 }
 
-/// Render the outline as a PNG image, where a `scale` of 1.0 is one pixel per CSS pixel
+/// Render the outline as a PNG image, where a `scale` of 1.0 is one pixel per CSS pixel.
+/// Cards are up to `max_card_width` CSS pixels wide
 ///
 /// # Safety
 ///
@@ -56,12 +64,13 @@ pub unsafe extern "C" fn storymap_render_png(
     input: *const u8,
     input_len: usize,
     scale: f32,
+    max_card_width: f32,
     out_len: *mut usize,
 ) -> *mut u8 {
     let outline = unsafe { read_outline(input, input_len) };
     let rendered = catch(|| {
         let map = storymap::parse(&outline);
-        let options = image_options(scale);
+        let options = image_options(scale, max_card_width);
         png_fits(&render_svg(&map, &options), scale).then(|| render_png(&map, &options))
     })
     .flatten();
@@ -125,9 +134,10 @@ unsafe fn hand_over(rendered: Option<Vec<u8>>, out_len: *mut usize) -> *mut u8 {
     }
 }
 
-fn html_page(map: &StoryMap) -> String {
+// The style sheet of storymap reads the maximum card width from a CSS variable
+fn html_page(map: &StoryMap, max_card_width: f32) -> String {
     format!(
-        "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n<style>\n{}\n</style>\n</head>\n<body>\n<div class=\"map-zoom\">{}</div>\n</body>\n</html>\n",
+        "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n<style>\n:root {{ --card-max-width: {max_card_width}px; }}\n{}\n</style>\n</head>\n<body>\n<div class=\"map-zoom\">{}</div>\n</body>\n</html>\n",
         escape_html(&map.title),
         map_css(),
         render_map_content(map)
@@ -135,10 +145,11 @@ fn html_page(map: &StoryMap) -> String {
 }
 
 // Loading the fonts of the OS takes a long time, so it is done once per process
-fn image_options(scale: f32) -> ImageOptions {
+fn image_options(scale: f32, max_card_width: f32) -> ImageOptions {
     static FONTS: OnceLock<Arc<fontdb::Database>> = OnceLock::new();
     ImageOptions {
         fonts: FONTS.get_or_init(|| ImageOptions::default().fonts).clone(),
         scale,
+        max_card_width,
     }
 }
