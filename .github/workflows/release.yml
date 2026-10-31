@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  native:
+    strategy:
+      matrix:
+        include:
+          # zigbuild links against an old glibc, so that the library also loads on older Linux
+          - platform: linux-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            build: cargo zigbuild --release --target x86_64-unknown-linux-gnu.2.28
+            library: libstorymap_ffi.so
+          - platform: linux-aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            build: cargo zigbuild --release --target aarch64-unknown-linux-gnu.2.28
+            library: libstorymap_ffi.so
+          - platform: macos-aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            build: cargo build --release --target aarch64-apple-darwin
+            library: libstorymap_ffi.dylib
+          - platform: macos-x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            build: cargo build --release --target x86_64-apple-darwin
+            library: libstorymap_ffi.dylib
+          - platform: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            build: cargo build --release --target x86_64-pc-windows-msvc
+            library: storymap_ffi.dll
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: actions/setup-python@v6
+        if: runner.os == 'Linux'
+        with:
+          python-version: '3.x'
+
+      - name: Install zigbuild
+        if: runner.os == 'Linux'
+        run: pip install ziglang cargo-zigbuild
+
+      - name: Build the native library
+        run: ${{ matrix.build }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.platform }}
+          path: native/target/${{ matrix.target }}/release/${{ matrix.library }}
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    needs: native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the version from the tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::The tag must look like v1.2.0: $GITHUB_REF_NAME"
+            exit 1
+          fi
+          echo "APP_VERSION=$version" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Each artifact goes into a folder of its own name, such as native-libs/linux-x86_64/.
+      - uses: actions/download-artifact@v7
+        with:
+          path: native-libs
+
+      # A release runs the tests again, because a tag can point to any commit.
+      # The tests load the Linux library that zigbuild made.
+      - name: Test and build the plugin
+        run: mvn -B clean package -Dcargo.skip=true "-Drevision=$APP_VERSION"
+
+      - name: Check that the jar holds the library of every platform
+        run: |
+          count=$(unzip -l "target/storymap-maven-plugin-$APP_VERSION.jar" | grep -c 'native/.*storymap_ffi')
+          if [[ "$count" -ne 5 ]]; then
+            echo "::error::The jar holds $count native libraries, not 5"
+            exit 1
+          fi
+
+      # The pom goes with the jar, so that users can install both with install:install-file.
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp .flattened-pom.xml "storymap-maven-plugin-$APP_VERSION.pom"
+          gh release create "$GITHUB_REF_NAME" \
+            "target/storymap-maven-plugin-$APP_VERSION.jar" \
+            "storymap-maven-plugin-$APP_VERSION.pom" \
+            --title "$GITHUB_REF_NAME" --generate-notes

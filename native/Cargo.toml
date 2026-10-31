@@ -1,0 +1,13 @@
+[package]
+name = "storymap_ffi"
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[lib]
+# A C library, for the Java side to load through FFM
+crate-type = ["cdylib"]
+
+[dependencies]
+storymap = { version = "0.2.1", features = ["image"] }
