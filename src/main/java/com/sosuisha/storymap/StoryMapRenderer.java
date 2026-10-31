@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 public final class StoryMapRenderer {
     /** The maximum card width when none is given, in CSS pixels. */
-    public static final float DEFAULT_MAX_CARD_WIDTH = 240f;
+    public static final float DEFAULT_MAX_CARD_WIDTH = 160f;
 
     private StoryMapRenderer() {}
 
