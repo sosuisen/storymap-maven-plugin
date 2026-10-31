@@ -87,6 +87,20 @@ class RenderMojoTest {
     }
 
     @Test
+    @DisplayName("カードの幅の上限を、パラメーターで変えられる")
+    void card_width_limit_follows_the_parameter() throws Exception {
+        RenderMojo mojo = mojo(writeOutline("storymap.md"), List.of("html"));
+        mojo.maxCardWidth = 320f;
+
+        mojo.execute();
+
+        assertTrue(
+            Files.readString(mojo.outputDirectory.toPath().resolve("storymap.html"))
+                .contains("--card-max-width: 320px;")
+        );
+    }
+
+    @Test
     @DisplayName("入力ファイルがなければ、実行エラーになる")
     void missing_input_is_an_execution_error() {
         RenderMojo mojo = mojo(folder.resolve("missing.md"), List.of("html"));
