@@ -41,7 +41,7 @@ public class RenderMojo extends AbstractMojo {
     float scale;
 
     /** The widest that a card may be, in CSS pixels. A longer text wraps onto more lines. */
-    @Parameter(property = "storymap.maxCardWidth", defaultValue = "240")
+    @Parameter(property = "storymap.maxCardWidth", defaultValue = "160")
     float maxCardWidth;
 
     /**

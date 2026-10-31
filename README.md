@@ -59,7 +59,7 @@ mvn storymap:render -Dstorymap.input=docs/map.md -Dstorymap.formats=html,svg,png
 | `outputDirectory` | `storymap.outputDirectory` | `${project.build.directory}/storymap` | The folder to write the files to |
 | `formats` | `storymap.formats` | `html` | The output formats: `html`, `svg`, and `png` |
 | `scale` | `storymap.scale` | `1.0` | The size of the PNG image. At 1.0, one CSS pixel is one pixel |
-| `maxCardWidth` | `storymap.maxCardWidth` | `240` | The widest that a card may be, in CSS pixels. A longer text wraps onto more lines |
+| `maxCardWidth` | `storymap.maxCardWidth` | `160` | The widest that a card may be, in CSS pixels. A longer text wraps onto more lines |
 
 Each output file is named after the input file, without its extension.
 
