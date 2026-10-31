@@ -51,7 +51,8 @@ public final class StoryMapRenderer {
      * @param maxCardWidth the widest that a card may be, in CSS pixels. A longer text wraps
      * @return the rendered bytes. HTML and SVG are UTF-8 text
      * @throws NullPointerException if {@code outline} or {@code format} is null
-     * @throws IllegalArgumentException if {@code scale} is not a positive finite number
+     * @throws IllegalArgumentException if {@code scale} or {@code maxCardWidth} is not a positive
+     *         finite number
      * @throws RenderException if the native library fails, such as for an image that is too large
      * @throws UnsupportedOperationException if no native library is built for this platform
      */
@@ -62,6 +63,11 @@ public final class StoryMapRenderer {
         if (!(Float.isFinite(scale) && scale > 0)) {
             throw new IllegalArgumentException(
                 "The scale must be a positive finite number: " + scale
+            );
+        }
+        if (!(Float.isFinite(maxCardWidth) && maxCardWidth > 0)) {
+            throw new IllegalArgumentException(
+                "The maximum card width must be a positive finite number: " + maxCardWidth
             );
         }
         try (Arena arena = Arena.ofConfined()) {
