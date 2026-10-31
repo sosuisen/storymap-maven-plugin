@@ -110,15 +110,20 @@ The jar gets only the library for your own OS.
   1. It builds the native library for five platforms on Windows, macOS, and Linux runners.
   2. It collects them in `native-libs/`, runs the tests again, and builds one jar.
   3. It checks that the jar holds all five libraries.
-  4. It creates a GitHub Release with the jar and the pom.
+  4. It signs the jars and uploads them to the Central Portal.
+  5. It creates a GitHub Release with the jar and the pom.
 - The tag must look like `v1.2.0`. With any other form, the workflow stops.
+- The upload is not public yet. Open the deployment in the [Central Portal](https://central.sonatype.com/publishing/deployments), check it, and press "Publish".
+  - A version on Maven Central can never be changed or removed. That is why this step is done by hand.
 
-The plugin is not on Maven Central.
-To install the jar and the pom from a release into your local repository, run:
+The workflow needs these secrets in the repository:
 
-```sh
-mvn install:install-file -Dfile=storymap-maven-plugin-1.0.0.jar -DpomFile=storymap-maven-plugin-1.0.0.pom
-```
+| Secret | Value |
+|---|---|
+| `MAVEN_CENTRAL_USERNAME` | The name of a user token of the Central Portal |
+| `MAVEN_CENTRAL_PASSWORD` | The password of the same token |
+| `GPG_PRIVATE_KEY` | The output of `gpg --armor --export-secret-keys <key ID>` |
+| `GPG_PASSPHRASE` | The passphrase of the key |
 
 ## License
 

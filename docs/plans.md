@@ -5,3 +5,4 @@
 ## ユーザータスク
 - [x] Markdownのアウトラインを、HTML・SVG・PNGのストーリーマップに描画する`render`ゴール
 - [x] Windows・macOS・LinuxのネイティブライブラリをCIでビルドし、1つのJARにまとめてリリースする
+- [x] リリースのワークフローから、Maven Centralへdeployする

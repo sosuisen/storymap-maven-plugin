@@ -110,15 +110,20 @@ cd native && cargo fmt --check && cargo clippy --all-targets
   1. Windows、macOS、Linuxの各ランナーで、5つのプラットフォームのネイティブライブラリをビルドする。
   2. それらを`native-libs/`に集め、テストをやり直してから、1つのJARを作る。
   3. JARに5つのライブラリが入っているかを確かめる。
-  4. GitHub Releaseを作り、JARとpomを添付する。
+  4. JARに署名し、Central Portalにアップロードする。
+  5. GitHub Releaseを作り、JARとpomを添付する。
 - タグは`v1.2.0`の形でなければなりません。それ以外の形では、ワークフローが止まります。
+- アップロードしただけでは、まだ公開されません。[Central Portal](https://central.sonatype.com/publishing/deployments)でdeploymentを開き、中身を確かめてから「Publish」を押します。
+  - Maven Centralに出たバージョンは、変えることも消すこともできません。そのため、この手順だけは手で行います。
 
-Maven Centralには公開していません。
-Releaseから取ったJARとpomは、次のコマンドで手元のリポジトリに入れられます。
+ワークフローには、リポジトリに次のSecretsが要ります。
 
-```sh
-mvn install:install-file -Dfile=storymap-maven-plugin-1.0.0.jar -DpomFile=storymap-maven-plugin-1.0.0.pom
-```
+| Secret | 中身 |
+|---|---|
+| `MAVEN_CENTRAL_USERNAME` | Central Portalのユーザートークンの名前 |
+| `MAVEN_CENTRAL_PASSWORD` | 同じトークンのパスワード |
+| `GPG_PRIVATE_KEY` | `gpg --armor --export-secret-keys <鍵ID>`の出力 |
+| `GPG_PASSPHRASE` | 鍵のパスフレーズ |
 
 ## ライセンス
 

@@ -63,4 +63,6 @@ C ABIの関数を4つ公開する。
 
 - `mvn`のビルドは、`generate-resources`で`cargo build --release`を実行する。手元のOSのライブラリだけが、JARに入る。
 - リリースのワークフローは、各OSでライブラリをビルドし、`native-libs/`に集める。そのうえで`-Dcargo.skip=true`を付けてJARを作る。
+- 続けて`release` profileで、sources・javadocのJARを作り、署名してCentral Portalへアップロードする。公開は、Central Portalで人が行う。
+- Centralに置くpomは、flatten-maven-pluginが`${revision}`をバージョンに置き換えたものである。
 - ライブラリの置き場所とファイル名は、pom.xmlのOSごとのprofileが決める。
