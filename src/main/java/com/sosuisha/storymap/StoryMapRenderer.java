@@ -73,10 +73,10 @@ public final class StoryMapRenderer {
                 case HTML -> (MemorySegment) Natives.RENDER_HTML
                     .invokeExact(input, inputLength, maxCardWidth, outputLength);
                 case SVG -> (MemorySegment) Natives.RENDER_SVG
-                    .invokeExact(input, inputLength, outputLength);
+                    .invokeExact(input, inputLength, maxCardWidth, outputLength);
                 case PNG -> (MemorySegment) Natives.RENDER_PNG.invokeExact(
                     input, inputLength, scale,
-                    outputLength
+                    maxCardWidth, outputLength
                 );
             });
             if (output.equals(MemorySegment.NULL)) {
@@ -111,11 +111,11 @@ public final class StoryMapRenderer {
         );
         static final MethodHandle RENDER_SVG = downcall(
             "storymap_render_svg",
-            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, ADDRESS)
+            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, ADDRESS)
         );
         static final MethodHandle RENDER_PNG = downcall(
             "storymap_render_png",
-            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, ADDRESS)
+            FunctionDescriptor.of(ADDRESS, ADDRESS, SIZE, JAVA_FLOAT, JAVA_FLOAT, ADDRESS)
         );
         static final MethodHandle FREE =
             downcall("storymap_free", FunctionDescriptor.ofVoid(ADDRESS, SIZE));
