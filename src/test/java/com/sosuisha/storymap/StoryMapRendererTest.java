@@ -34,7 +34,7 @@ class StoryMapRendererTest {
         @Test
         @DisplayName("スタイルを含む、単独で開けるHTMLページになる")
         void html_is_a_standalone_page() {
-            String html = renderText(Format.HTML);
+            String html = renderText(OutputFormat.HTML);
 
             assertTrue(html.startsWith("<!DOCTYPE html>"));
             assertTrue(html.contains("<style>"));
@@ -44,13 +44,13 @@ class StoryMapRendererTest {
         @Test
         @DisplayName("ページのタイトルは、マップのタイトルをエスケープしたものである")
         void page_title_is_the_escaped_map_title() {
-            assertTrue(renderText(Format.HTML).contains("<title>Shop &amp; Pay</title>"));
+            assertTrue(renderText(OutputFormat.HTML).contains("<title>Shop &amp; Pay</title>"));
         }
 
         @Test
         @DisplayName("日本語のカードが、文字化けせずに出力される")
         void japanese_text_survives() {
-            assertTrue(renderText(Format.HTML).contains("カードで払う"));
+            assertTrue(renderText(OutputFormat.HTML).contains("カードで払う"));
         }
     }
 
@@ -60,7 +60,7 @@ class StoryMapRendererTest {
         @Test
         @DisplayName("SVGは、SVG文書になる")
         void svg_is_an_svg_document() {
-            String svg = renderText(Format.SVG);
+            String svg = renderText(OutputFormat.SVG);
 
             assertTrue(svg.startsWith("<svg "));
             assertTrue(svg.endsWith("</svg>"));
@@ -69,7 +69,7 @@ class StoryMapRendererTest {
         @Test
         @DisplayName("PNGは、PNG画像になる")
         void png_is_a_png_image() {
-            byte[] png = StoryMapRenderer.render(OUTLINE, Format.PNG, 1.0f);
+            byte[] png = StoryMapRenderer.render(OUTLINE, OutputFormat.PNG, 1.0f);
 
             assertArrayEquals(PNG_SIGNATURE, Arrays.copyOf(png, PNG_SIGNATURE.length));
         }
@@ -77,8 +77,8 @@ class StoryMapRendererTest {
         @Test
         @DisplayName("PNGの幅は、倍率に比例する")
         void png_width_follows_the_scale() {
-            int width = pngWidth(StoryMapRenderer.render(OUTLINE, Format.PNG, 1.0f));
-            int doubled = pngWidth(StoryMapRenderer.render(OUTLINE, Format.PNG, 2.0f));
+            int width = pngWidth(StoryMapRenderer.render(OUTLINE, OutputFormat.PNG, 1.0f));
+            int doubled = pngWidth(StoryMapRenderer.render(OUTLINE, OutputFormat.PNG, 2.0f));
 
             // The width is rounded up after scaling, so it may be one pixel off
             assertEquals(2 * width, doubled, 1);
@@ -89,7 +89,7 @@ class StoryMapRendererTest {
         void too_large_image_fails() {
             assertThrows(
                 RenderException.class,
-                () -> StoryMapRenderer.render(OUTLINE, Format.PNG, 1_000_000f)
+                () -> StoryMapRenderer.render(OUTLINE, OutputFormat.PNG, 1_000_000f)
             );
         }
     }
@@ -100,11 +100,11 @@ class StoryMapRendererTest {
     void scale_must_be_positive_and_finite(float scale) {
         assertThrows(
             IllegalArgumentException.class,
-            () -> StoryMapRenderer.render(OUTLINE, Format.PNG, scale)
+            () -> StoryMapRenderer.render(OUTLINE, OutputFormat.PNG, scale)
         );
     }
 
-    private static String renderText(Format format) {
+    private static String renderText(OutputFormat format) {
         return new String(StoryMapRenderer.render(OUTLINE, format, 1.0f), StandardCharsets.UTF_8);
     }
 

@@ -6,7 +6,9 @@ import java.util.Objects;
 /**
  * An output format of the story map.
  */
-public enum Format {
+// Not named Format: Maven turns each <format> element of <formats> into the class Format of
+// the mojo's package, if there is one, and the plain string would fail to convert.
+public enum OutputFormat {
     /** A standalone HTML page. */
     HTML("html"),
     /** An SVG document. */
@@ -16,7 +18,7 @@ public enum Format {
 
     private final String extension;
 
-    Format(String extension) {
+    OutputFormat(String extension) {
         this.extension = extension;
     }
 
@@ -37,9 +39,9 @@ public enum Format {
      * @throws NullPointerException if {@code name} is null
      * @throws IllegalArgumentException if no format has the name
      */
-    public static Format fromName(String name) {
+    public static OutputFormat fromName(String name) {
         Objects.requireNonNull(name, "name");
-        for (Format format : values()) {
+        for (OutputFormat format : values()) {
             if (format.extension.equals(name.trim().toLowerCase(Locale.ROOT))) { return format; }
         }
         throw new IllegalArgumentException("Unknown format: " + name + ". Use html, svg, or png.");

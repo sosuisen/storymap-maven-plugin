@@ -48,21 +48,21 @@ public class RenderMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        List<Format> parsedFormats = parseFormats();
+        List<OutputFormat> parsedFormats = parseFormats();
         String outline = readInput();
         Path directory = createOutputDirectory();
-        for (Format format : parsedFormats) {
+        for (OutputFormat format : parsedFormats) {
             Path output = directory.resolve(baseName() + "." + format.extension());
             write(output, render(outline, format));
             getLog().info("Rendered the story map: " + output);
         }
     }
 
-    private List<Format> parseFormats() throws MojoFailureException {
-        List<Format> parsed = new ArrayList<>();
+    private List<OutputFormat> parseFormats() throws MojoFailureException {
+        List<OutputFormat> parsed = new ArrayList<>();
         for (String name : formats) {
             try {
-                parsed.add(Format.fromName(name));
+                parsed.add(OutputFormat.fromName(name));
             } catch (IllegalArgumentException e) {
                 throw new MojoFailureException(e.getMessage(), e);
             }
@@ -78,7 +78,7 @@ public class RenderMojo extends AbstractMojo {
         }
     }
 
-    private byte[] render(String outline, Format format)
+    private byte[] render(String outline, OutputFormat format)
         throws MojoExecutionException, MojoFailureException {
         try {
             return StoryMapRenderer.render(outline, format, scale);
