@@ -43,11 +43,11 @@
     <revision>1.0.0-SNAPSHOT</revision>
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.version>3.10.0</maven.version>
+    <maven.version>3.10.1</maven.version>
     <maven.plugin.tools.version>3.16.0</maven.plugin.tools.version>
     <jspecify.version>1.0.1</jspecify.version>
-    <errorprone.version>2.51.0</errorprone.version>
-    <nullaway.version>0.14.3</nullaway.version>
+    <errorprone.version>2.53.0</errorprone.version>
+    <nullaway.version>0.14.4</nullaway.version>
     <junit.version>6.1.3</junit.version>
     <!-- The release workflow builds the native libraries on each OS and skips cargo here. -->
     <cargo.skip>false</cargo.skip>
@@ -116,7 +116,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.4</version>
+        <version>3.7.0</version>
         <executions>
           <execution>
             <id>cargo-build</id>
@@ -210,7 +210,7 @@
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
-        <version>1.30.1</version>
+        <version>1.30.2</version>
         <dependencies>
           <dependency>
             <groupId>org.pitest</groupId>
@@ -254,7 +254,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
-        <version>1.8.0</version>
+        <version>1.9.0</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <flattenMode>resolveCiFriendliesOnly</flattenMode>
